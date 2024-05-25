@@ -11,37 +11,56 @@ class User extends Authenticatable
 {
     use HasFactory, Notifiable;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
+    protected $table = 'users';
+    protected $primaryKey = 'id';
+    public $incrementing = false;
+    protected $keyType = 'uuid';
+    public $timestamps = true;
+
     protected $fillable = [
-        'name',
-        'email',
-        'password',
+        'uid', 'email', 'name', 'avatar_url', 'gender_id', 'created_at'
     ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var array<int, string>
-     */
-    protected $hidden = [
-        'password',
-        'remember_token',
-    ];
+    public function gender()
+    {
+        return $this->belongsTo(Gender::class, 'gender_id', 'id');
+    }
+
+    public function posts()
+    {
+        return $this->hasMany(Post::class, 'author_id', 'id');
+    }
+
+    public function comments()
+    {
+        return $this->hasMany(Comment::class, 'author_id', 'id');
+    }
+
+    public function postReactions()
+    {
+        return $this->hasMany(PostReaction::class, 'user_id', 'id');
+    }
+
+    public function commentReactions()
+    {
+        return $this->hasMany(CommentReaction::class, 'user_id', 'id');
+    }
+
+    public function tags()
+    {
+        return $this->hasMany(Tag::class, 'author_id', 'id');
+    }
 
     /**
      * Get the attributes that should be cast.
      *
      * @return array<string, string>
      */
-    protected function casts(): array
-    {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-        ];
-    }
+    // protected function casts(): array
+    // {
+    //     return [
+    //         'email_verified_at' => 'datetime',
+    //         'password' => 'hashed',
+    //     ];
+    // }
 }
