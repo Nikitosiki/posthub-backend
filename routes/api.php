@@ -34,7 +34,6 @@ Route::prefix('v1')->group(function () {
      *
      * Post
      */
-    Route::post('/create/posts', [PostController::class, 'createPost']);
     Route::get('/posts', [PostController::class, 'getSortedPosts']);
     Route::get('/posts/tag/{tagId}', [PostController::class, 'getSortedPostsByTag']);
     Route::get('/posts/search', [PostController::class, 'searchPostsByTitle']);
@@ -43,16 +42,10 @@ Route::prefix('v1')->group(function () {
     Route::get('/count/posts', [PostController::class, 'getCountPosts']);
 
     // Reactions to posts
-    Route::post('/posts/reactions', [PostController::class, 'addReactionToPost']);
-    Route::delete('/posts/reactions', [PostController::class, 'removeMyReactionToPost']);
     Route::get('/posts/{postId}/reactions', [PostController::class, 'getReactionsToPost']);
     Route::get('/posts/{postId}/reaction/{userId}', [PostController::class, 'getMyReactionIdToPost']);
 
     // Tags for posts
-    Route::post('/posts/tags', [PostController::class, 'addTagOnPost']);
-    Route::delete('/posts/tags', [PostController::class, 'removeTagOnPost']);
-    Route::post('/posts/tags/bulk', [PostController::class, 'addTagsOnPost']);
-    Route::put('/posts/tags', [PostController::class, 'changeTagsOnPost']);
     Route::get('/posts/{postId}/tags', [PostController::class, 'getTagsByPostId']);
 
     // Number of posts
@@ -64,13 +57,9 @@ Route::prefix('v1')->group(function () {
      *
      * Comment
      */
-    Route::post('/comments', [CommentController::class, 'createComment']);
-    Route::put('/comments/{id}', [CommentController::class, 'updateCommentById']);
     Route::get('/comments/{id}', [CommentController::class, 'getCommentById']);
     Route::get('/comments/post/{post_id}', [CommentController::class, 'getFirstComments']);
     Route::get('/comments/{comment_id}/children', [CommentController::class, 'getFirstChildrensComment']);
-    Route::post('/comments/reactions', [CommentController::class, 'addReactionToComment']);
-    Route::delete('/comments/reactions', [CommentController::class, 'removeMyReactionToComment']);
     Route::get('/comments/{commentId}/reactions', [CommentController::class, 'getReactionsToComment']);
     Route::get('/comments/{commentId}/reaction/{userId}', [CommentController::class, 'getMyReactionIdToComment']);
 
@@ -88,7 +77,6 @@ Route::prefix('v1')->group(function () {
      *
      * Tag
      */
-    Route::post('/tags', [TagController::class, 'create']);
     Route::get('/tags', [TagController::class, 'index']);
     Route::get('/tags/search', [TagController::class, 'search']);
     Route::get('/tags/{id}', [TagController::class, 'show']);
@@ -103,8 +91,28 @@ Route::prefix('v1')->group(function () {
     Route::get('/users/{id}', [UserController::class, 'getById']);
     Route::get('/users/uid/{uid}', [UserController::class, 'getByUid']);
     Route::put('/users/{id}', [UserController::class, 'updateById']);
+
+    Route::middleware(['auth:sanctum'])->group(function () {
+        Route::post('/create/posts', [PostController::class, 'createPost']);
+
+        Route::post('/tags', [TagController::class, 'create']);
+
+        Route::post('/posts/reactions', [PostController::class, 'addReactionToPost']);
+        Route::delete('/posts/reactions', [PostController::class, 'removeMyReactionToPost']);
+
+        Route::post('/posts/tags', [PostController::class, 'addTagOnPost']);
+        Route::delete('/posts/tags', [PostController::class, 'removeTagOnPost']);
+        Route::put('/posts/tags', [PostController::class, 'changeTagsOnPost']);
+
+        Route::post('/comments', [CommentController::class, 'createComment']);
+        Route::put('/comments/{id}', [CommentController::class, 'updateCommentById']);
+
+        Route::post('/comments/reactions', [CommentController::class, 'addReactionToComment']);
+        Route::delete('/comments/reactions', [CommentController::class, 'removeMyReactionToComment']);
+
+        Route::get('/user', function (Request $request) {
+        return $request->user();
+    });
+    });
 });
 
-Route::middleware(['auth:sanctum'])->get('/user', function (Request $request) {
-    return $request->user();
-});
