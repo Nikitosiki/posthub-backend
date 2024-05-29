@@ -9,6 +9,7 @@ use App\Models\Reaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Routing\Controller as BaseController;
+use Illuminate\Support\Facades\Auth;
 
 
 class CommentController extends BaseController
@@ -18,12 +19,22 @@ class CommentController extends BaseController
     {
         $validated = $request->validate([
             'content' => 'required|string',
-            'author_id' => 'required|uuid',
             'post_id' => 'required|uuid',
             'parent_comment_id' => 'nullable|bigint',
         ]);
 
-        $comment = Comment::create($validated);
+        $user = Auth::user();
+
+        if (!$user) {
+            return response()->json(['error' => 'Unauthorized'], 401);
+        }
+
+        $comment = Comment::create([
+            'content' => $validated['content'],
+            'author_id' => $user->id,
+            'post_id' => $validated['post_id'],
+            'parent_comment_id' => $validated['parent_comment_id'],
+        ]);
 
         return response()->json(['data' => $comment], 201);
     }
@@ -31,11 +42,27 @@ class CommentController extends BaseController
     // Обновление комментария по ID
     public function updateCommentById(Request $request, $id)
     {
-        $content = $request->input('content');
+        $validated = $request->validate([
+            'content' => 'required|string',
+        ]);
 
-        $comment = Comment::where('id', $id)->update(['content' => $content]);
+        $user = Auth::user();
 
-        return response()->json(['success' => $comment > 0]);
+        if (!$user) {
+            return response()->json(['error' => 'Unauthorized'], 401);
+        }
+
+        $content = $validated['content'];
+
+        $comment = Comment::where('id', $id)
+                          ->where('user_id', $user->id)
+                          ->update(['content' => $content]);
+
+        if ($comment > 0) {
+            return response()->json(['success' => true], 200);
+        } else {
+            return response()->json(['error' => 'Comment not found or not authorized'], 404);
+        }
     }
 
     // Получение комментария по ID

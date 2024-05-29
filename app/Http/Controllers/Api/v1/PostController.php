@@ -11,6 +11,7 @@ use App\Models\CountViewsUnauth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Routing\Controller as BaseController;
+use Illuminate\Support\Facades\Auth;
 
 class PostController extends BaseController
 {
@@ -20,13 +21,25 @@ class PostController extends BaseController
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'content' => 'required|string',
-            'author_id' => 'required|uuid',
             'age_rating_id' => 'nullable|integer',
             'image_path' => 'nullable|string',
             'count_view' => 'nullable|integer'
         ]);
 
-        $post = Post::create($validated);
+        $user = Auth::user();
+
+        if (!$user) {
+            return response()->json(['error' => 'Unauthorized'], 401);
+        }
+
+        $post = Post::create([
+            'title' => $validated['title'],
+            'author_id' => $user->id,
+            'content' => $validated['content'],
+            'age_rating_id' => $validated['age_rating_id'],
+            'image_path' => $validated['image_path'],
+            'count_view' => 0
+        ]);
 
         return response()->json(['data' => $post], 201);
     }

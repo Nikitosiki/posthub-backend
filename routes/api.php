@@ -92,7 +92,7 @@ Route::prefix('v1')->group(function () {
     Route::get('/users/uid/{uid}', [UserController::class, 'getByUid']);
     Route::put('/users/{id}', [UserController::class, 'updateById']);
 
-    Route::middleware(['auth:sanctum'])->group(function () {
+    Route::middleware(['auth:sanctum'])->group(function ($router) {
         Route::post('/create/posts', [PostController::class, 'createPost']);
 
         Route::post('/tags', [TagController::class, 'create']);
